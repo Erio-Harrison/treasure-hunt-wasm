@@ -9,11 +9,13 @@ A simple treasure hunting game built with Rust and WebAssembly, demonstrating th
 - **Obstacle Navigation**: Avoid walls and obstacles
 - **Score Tracking**: Keep track of your best times
 - **Responsive Controls**: Smooth keyboard-based movement
+- **Audio System**: Immersive sound effects and background music
 
 ## 🛠️ Technology Stack
 
 - **Backend**: Rust + WebAssembly
 - **Frontend**: JavaScript + HTML5 Canvas
+- **Audio**: Web Audio API
 - **Build Tool**: wasm-pack
 - **Package Manager**: Cargo
 
@@ -53,6 +55,7 @@ python -m http.server
 - Collect all treasures (gold circles) before time runs out
 - Avoid walls (dark gray) and obstacles (light gray)
 - Complete the level as quickly as possible to set a new best time
+- Enjoy background music and sound effects while playing
 
 ## 🏗️ Project Structure
 
@@ -65,10 +68,16 @@ treasure-hunt-wasm/
 │   ├── player.rs            # Player system
 │   ├── map.rs               # Map system
 │   ├── treasure.rs          # Treasure system
+│   ├── audio.rs             # Audio system
 │   └── renderer.rs          # Rendering system
 └── www/                      # Web frontend
     ├── index.html           # Main page
-    └── index.js             # JavaScript interface
+    ├── index.js             # JavaScript interface
+    └── sounds/              # Audio assets
+        ├── collect.mp3      # Collection sound
+        ├── win.mp3          # Victory sound
+        ├── timeup.mp3       # Time's up sound
+        └── background.mp3   # Background music
 ```
 
 ## 🔧 Development
@@ -120,6 +129,13 @@ python -m http.server
   - Safe treasure placement
   - Victory condition
 
+- [x] Audio System
+  - Background music
+  - Collection sound effects
+  - Victory/Game Over sounds
+  - Async audio loading
+  - Audio command queue
+
 - [x] Rendering System
   - Canvas 2D rendering
   - Visual differentiation of elements
@@ -131,9 +147,10 @@ python -m http.server
 - [ ] Multiple levels
 - [ ] Moving enemies
 - [ ] Special items and abilities
-- [ ] Sound effects
 - [ ] Save system
 - [ ] Complex map generation
+- [ ] Volume control
+- [ ] More sound effects
 
 ## 🤝 Contributing
 
@@ -147,6 +164,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Rust WebAssembly Working Group
 - wasm-bindgen contributors
+- Web Audio API team
 - The Rust community
 
 ---

@@ -5,6 +5,7 @@ mod renderer;
 mod player;
 mod map;
 mod treasure;
+mod audio;
 pub use game::Game;
 pub use renderer::Renderer;
 

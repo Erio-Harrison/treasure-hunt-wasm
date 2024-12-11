@@ -1,10 +1,8 @@
-// www/index.js
 import init, { Game, Renderer } from '../pkg/treasure_hunt_wasm.js';
 
 let game = null;
 let renderer = null;
 let animationId = null;
-//跟踪事件是否已初始化
 let eventsInitialized = false;
 
 function initializeEvents() {
@@ -15,27 +13,47 @@ function initializeEvents() {
     }
 }
 
-async function startGame() {
-    if (!game) {
-        const canvas = document.getElementById('game-canvas');
-        const width = 800;
-        const height = 600;
 
-        game = new Game(width, height);
-        renderer = new Renderer(canvas, width, height);
-         // 只在首次创建游戏时初始化事件
-        initializeEvents();
-        
-        // 添加键盘事件监听
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('keyup', handleKeyUp);
-    } else {
-        game.reset();
+async function createGame(width, height) {
+    try {
+        return await new Game(width, height);
+    } catch (error) {
+        console.error("Failed to create game:", error);
+        throw error;
     }
-    
-    game.start();
-    console.log("Game started");
-    gameLoop();
+}
+
+async function startGame() {
+    try {
+        if (!game) {
+            const canvas = document.getElementById('game-canvas');
+            const width = 800;
+            const height = 600;
+
+            // 创建新的游戏实例
+            game = await createGame(width, height);
+            
+            if (!game) {
+                throw new Error("Failed to create game instance");
+            }
+
+            renderer = new Renderer(canvas, width, height);
+            initializeEvents();
+        } else {
+            game.reset();
+        }
+
+        if (game && typeof game.start === 'function') {
+            game.start();
+            console.log("Game started");
+            gameLoop();
+        } else {
+            throw new Error("Game instance not properly initialized");
+        }
+    } catch (error) {
+        console.error("Error starting game:", error);
+        console.error("Game object:", game);
+    }
 }
 
 function stopGame() {
@@ -66,14 +84,13 @@ function gameLoop(timestamp) {
         if (timestamp === undefined) {
             timestamp = 0;
         }
-        console.log("GameLoop timestamp:", timestamp); 
-        game.update(timestamp);  // 直接传递 timestamp
+        
+        game.update(timestamp);
         renderer.render(game);
         animationId = requestAnimationFrame(gameLoop);
     }
 }
 
-// www/index.js
 async function initialize() {
     try {
         await init();
@@ -99,5 +116,4 @@ async function initialize() {
     }
 }
 
-// 确保在页面加载完成后初始化
 window.addEventListener('load', initialize);

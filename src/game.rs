@@ -4,6 +4,7 @@ use web_sys::console;
 use crate::player::Player;
 use crate::map::{GameMap, TileType};
 use crate::treasure::TreasureManager;
+use crate::audio::AudioSystem;
 
 #[wasm_bindgen]
 pub struct Game {
@@ -20,6 +21,7 @@ pub struct Game {
     time_limit: f64,   
     best_time: Option<f64>,  
     first_timestamp: Option<f64>,
+    audio: Option<AudioSystem>,
 }
 
 #[wasm_bindgen]
@@ -33,18 +35,32 @@ pub enum GameState {
 #[wasm_bindgen]
 impl Game {
     #[wasm_bindgen(constructor)]
-    pub fn new(width: u32, height: u32) -> Game {
+    pub async fn new(width: u32, height: u32) -> Result<Game, JsValue> {
         console::log_1(&"Creating new game instance".into());
-        let tile_size = 40.0; // 设置瓦片大小
+        
+        // 初始化音频系统
+        let audio = match AudioSystem::new().await {
+            Ok(audio_system) => {
+                // 预加载所有音效
+                audio_system.load_sound("collect", "./sounds/collect.mp3").await?;
+                audio_system.load_sound("win", "./sounds/win.mp3").await?;
+                audio_system.load_sound("timeup", "./sounds/timeup.mp3").await?;
+                audio_system.load_sound("background", "./sounds/background.mp3").await?;
+                Some(audio_system)
+            },
+            Err(_) => None,
+        };
+
+        let tile_size = 40.0;
         let map_width = (width as f64 / tile_size) as usize;
         let map_height = (height as f64 / tile_size) as usize;
         
         let map = GameMap::new(map_width, map_height, tile_size);
-        let player = Player::new(tile_size * 1.5, tile_size * 1.5); // 放在第二个格子的中心,一个安全位置
+        let player = Player::new(tile_size * 1.5, tile_size * 1.5);
         let mut treasure_manager = TreasureManager::new();
         treasure_manager.generate_treasures(5, width as f64, height as f64, tile_size, &map);
 
-        Game {
+        Ok(Game {
             width,
             height,
             is_running: false,
@@ -58,7 +74,8 @@ impl Game {
             time_limit: 60.0,
             best_time: None,
             first_timestamp: None,
-        }
+            audio,
+        })
     }
 
     // 添加 #[wasm_bindgen] 属性给这些公共方法
@@ -69,6 +86,9 @@ impl Game {
         self.last_frame_time = 0.0;
         self.game_time = 0.0;
         self.time_limit = 60.0;
+        if let Some(audio) = &self.audio {
+            audio.play_music("bgm");
+        }
         console::log_1(&format!("Start: time_limit={}, game_time={}", 
             self.time_limit, self.game_time).into());
     }
@@ -77,6 +97,10 @@ impl Game {
     pub fn stop(&mut self) {
         console::log_1(&"Game stopped!".into());
         self.is_running = false;
+        
+        if let Some(audio) = &self.audio {
+            audio.stop_music();
+        }
     }
 
     // 更新游戏状态检查
@@ -116,6 +140,10 @@ impl Game {
         // 先检查时间限制
         if self.game_time >= self.time_limit {
             self.state = GameState::TimeUp;
+            if let Some(audio) = &self.audio {
+                audio.stop_music();
+                audio.play_sound("timeup");
+            }
             self.stop();
             return;
         }
@@ -134,6 +162,12 @@ impl Game {
             } else {
                 self.best_time = Some(self.game_time);
             }
+
+            if let Some(audio) = &self.audio {
+                audio.stop_music();
+                audio.play_sound("win");
+            }
+
             self.stop();
         }
     }
@@ -255,6 +289,10 @@ impl Game {
             self.player.size()
         ) {
             console::log_1(&"Treasure collected!".into());
+            
+            if let Some(audio) = &self.audio {
+                audio.play_sound("collect");
+            }
         }
     }
     
