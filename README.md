@@ -2,6 +2,8 @@
 
 A simple treasure hunting game built with Rust and WebAssembly, demonstrating the integration of Rust's performance with web technologies.
 
+![example](assets/example.png)
+
 ## 🎮 Game Features
 
 - **Time Challenge**: Complete the hunt within 60 seconds
@@ -47,7 +49,7 @@ wasm-pack build --target web
 python -m http.server
 ```
 
-4. Open your browser and navigate to `http://localhost:8000`
+4. Open your browser and navigate to `http://localhost:8000`. Then go to "www/" content.
 
 ## 🎯 How to Play
 
